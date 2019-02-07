@@ -1,0 +1,6 @@
+<form (ngSubmit)="onAddProductSubmit()" [formGroup]="formGroup">
+  <input formControlName="productCode" placeholder="Product Code" type="text"><br>
+  <input formControlName="productName" placeholder="Product Name" type="text"><br>
+  <input formControlName="stock" placeholder="Total Stock Available" type="text"><br>
+  <input value="Submit" type="submit">
+</form>
