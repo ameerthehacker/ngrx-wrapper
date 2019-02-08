@@ -7,15 +7,15 @@ import { Store } from '@ngrx/store';
   templateUrl: './total-stock.component.html',
   styleUrls: ['./total-stock.component.scss']
 })
-export class TotalStockComponent extends Stateful implements OnInit {
+export class TotalStockComponent implements OnInit {
   totalStock: 0;
 
-  constructor(private store: Store<any>) { 
-    super(store);
+  constructor(private store: Store<any>, private state: Stateful) { 
+    //super(store);
   }
 
   ngOnInit() {
-    this.listen('PRODUCTS').subscribe(products => {
+    this.state.listen('PRODUCTS').subscribe(products => {
       this.totalStock = 0;
       
       if(products) {

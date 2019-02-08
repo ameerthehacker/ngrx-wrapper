@@ -7,17 +7,17 @@ import { Store } from '@ngrx/store';
   templateUrl: './product-details.component.html',
   styleUrls: ['./product-details.component.scss']
 })
-export class ProductDetailsComponent extends Stateful implements OnInit {
+export class ProductDetailsComponent implements OnInit {
   selectedProduct: any;
 
-  constructor(private store: Store<any>) {
-    super(store);
+  constructor(private store: Store<any>, private state: Stateful) {
+    //super(store);
   }
 
   ngOnInit() {
-    this.listen('SELECTED_PRODUCT_ID').subscribe((id) => {
+    this.state.listen('SELECTED_PRODUCT_ID').subscribe((id) => {
       if(id) {
-        this.get('PRODUCTS').then((products: any) => {
+        this.state.get('PRODUCTS').then((products: any) => {
           this.selectedProduct = products.find(product => product.id == id);
         });
       }

@@ -8,13 +8,13 @@ import { Store } from '@ngrx/store';
   templateUrl: './add-product.component.html',
   styleUrls: ['./add-product.component.scss']
 })
-export class AddProductComponent extends Stateful implements OnInit {
+export class AddProductComponent implements OnInit {
 
   fb: FormBuilder;
   formGroup: FormGroup;
 
-  constructor(store: Store<any>) { 
-    super(store);
+  constructor(store: Store<any>, private state: Stateful) {
+    //super(store);
 
     this.fb = new FormBuilder();
 
@@ -26,11 +26,12 @@ export class AddProductComponent extends Stateful implements OnInit {
   }
 
   onAddProductSubmit() {
-    this.get('PRODUCTS').then((products: any) => {
+    this.state.get('PRODUCTS').then((products: any[] = []) => {
+      
       const result = this.formGroup.value;
       const id = products.length + 1;
 
-      this.set('PRODUCTS', [...products, { id, productCode: result.productCode, name: result.productName, stock: parseInt(result.stock) } ]);
+      this.state.set('PRODUCTS', [...products, { id, productCode: result.productCode, name: result.productName, stock: parseInt(result.stock) }]);
     });
   }
 

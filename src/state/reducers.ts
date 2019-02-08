@@ -12,5 +12,10 @@ export function rootReducer(state: any = {}, action: SetAction) {
 
       return result;
     break;
+    case ActionTypes.SET_STATE:
+      
+      const payload = action.payload;
+      return payload;
+    break;
   }
 }

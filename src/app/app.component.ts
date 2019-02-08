@@ -9,7 +9,12 @@ import { Stateful } from 'src/state/state';
 export class AppComponent implements OnDestroy {
   title = 'ngx-wrapper';
 
-  constructor() {}
+  constructor(private statefulService: Stateful) {
+    this.statefulService.int({
+      db: 'localstorage',
+      saveState: true
+    })
+  }
 
   ngOnDestroy() {
     console.log('destroy');
