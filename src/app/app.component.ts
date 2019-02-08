@@ -11,7 +11,7 @@ export class AppComponent implements OnDestroy {
 
   constructor(private statefulService: Stateful) {
     this.statefulService.int({
-      db: 'localstorage',
+      db: 'indexdb',
       saveState: true
     })
   }

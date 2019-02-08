@@ -5,7 +5,7 @@ import { OnDestroy } from '@angular/core';
 
 export interface IConfig {
   saveState: boolean;
-  db: 'localstorage' | 'indexdb' 
+  db: 'localstorage' | 'indexdb'
 }
 
 @Injectable()
@@ -16,22 +16,57 @@ export class Stateful {
   constructor(private baseStore: Store<any>) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
+
+    var dbReq = window.indexedDB.open("db_state", 1);
+    dbReq.onupgradeneeded = function () {
+      var db = dbReq.result;
+      db.createObjectStore("state");
+    };
+    dbReq.onerror = function () {
+      console.log("failed opening DB:")
+    };
+    dbReq.onsuccess = function () {
+      console.log("opened DB")
+    };
   }
 
-  int(config: IConfig){
+  int(config: IConfig) {
     this.config = config;
 
-    if(config.saveState) {
-      const state = localStorage.getItem('app');
+    if (config.saveState) {
+      if (config.db === "indexdb") {
+        var dbReq = window.indexedDB.open("db_state", 1);
+        dbReq.onsuccess = function () {
+          let db = dbReq.result;
+          let transaction = db.transaction("state", "readwrite");
+          let objstore = transaction.objectStore("state");
+          let response = objstore.get("state");
+          console.log(response);
+        }
+        this.baseStore.subscribe(response => {
+          var dbReq = window.indexedDB.open("db_state", 1);
+          dbReq.onsuccess = function () {
+            let db = dbReq.result;
+            let transaction = db.transaction("state", "readwrite");
+            let objstore = transaction.objectStore("state");
+            objstore.put(JSON.stringify(response), "state");
+          }
+        });
 
-      if(state) {
-        const stateJSON = JSON.parse(state).app;
-        this.baseStore.dispatch(new SetStateAction(stateJSON));
+
       }
+      else {
+        const state = localStorage.getItem('app');
 
-      this.baseStore.subscribe(result => {
-        localStorage.setItem('app', JSON.stringify(result));
-      });
+        if (state) {
+          const stateJSON = JSON.parse(state).app;
+          this.baseStore.dispatch(new SetStateAction(stateJSON));
+        }
+
+        this.baseStore.subscribe(result => {
+          localStorage.setItem('app', JSON.stringify(result));
+        });
+      }
     }
   }
 
@@ -50,7 +85,7 @@ export class Stateful {
       this.baseStore.select('app', key).subscribe((result: any) => {
         resolve(result);
       });
-    }); 
+    });
   }
 
 }
