@@ -16,18 +16,6 @@ export class Stateful {
   constructor(private baseStore: Store<any>) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
-
-    var dbReq = window.indexedDB.open("db_state", 1);
-    dbReq.onupgradeneeded = function () {
-      var db = dbReq.result;
-      db.createObjectStore("state");
-    };
-    dbReq.onerror = function () {
-      console.log("failed opening DB:")
-    };
-    dbReq.onsuccess = function () {
-      console.log("opened DB")
-    };
   }
 
   int(config: IConfig) {
@@ -36,6 +24,13 @@ export class Stateful {
     if (config.saveState) {
       if (config.db === "indexdb") {
         var dbReq = window.indexedDB.open("db_state", 1);
+        dbReq.onupgradeneeded = function () {
+          var db = dbReq.result;
+          db.createObjectStore("state");
+        };
+        dbReq.onerror = function () {
+          console.log("failed opening DB:")
+        };
         dbReq.onsuccess = function () {
           let db = dbReq.result;
           let transaction = db.transaction("state", "readwrite");
@@ -45,6 +40,17 @@ export class Stateful {
             this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
           }.bind(this)
         }.bind(this)
+
+        // var dbReq = window.indexedDB.open("db_state", 1);
+        // dbReq.onsuccess = function () {
+        //   let db = dbReq.result;
+        //   let transaction = db.transaction("state", "readwrite");
+        //   let objstore = transaction.objectStore("state");
+        //   let response = objstore.get("state");
+        //   response.onsuccess = function () {
+        //     this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
+        //   }.bind(this)
+        // }.bind(this)
         this.baseStore.subscribe(response => {
           var dbReq = window.indexedDB.open("db_state", 1);
           dbReq.onsuccess = function () {
