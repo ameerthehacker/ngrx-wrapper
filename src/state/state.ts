@@ -5,7 +5,7 @@ import { OnDestroy } from '@angular/core';
 
 export interface IConfig {
   saveState: boolean;
-  db: 'localstorage' | 'indexdb'
+  db: 'localstorage' | 'indexdb' | 'sessionstorage'
 }
 
 @Injectable()
@@ -41,8 +41,10 @@ export class Stateful {
           let transaction = db.transaction("state", "readwrite");
           let objstore = transaction.objectStore("state");
           let response = objstore.get("state");
-          console.log(response);
-        }
+          response.onsuccess = function () {
+            this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
+          }.bind(this)
+        }.bind(this)
         this.baseStore.subscribe(response => {
           var dbReq = window.indexedDB.open("db_state", 1);
           dbReq.onsuccess = function () {
@@ -52,17 +54,23 @@ export class Stateful {
             objstore.put(JSON.stringify(response), "state");
           }
         });
-
-
       }
-      else {
-        const state = localStorage.getItem('app');
-
+      else if(config.db === "sessionstorage"){
+        const state = sessionStorage.getItem('app');
         if (state) {
           const stateJSON = JSON.parse(state).app;
           this.baseStore.dispatch(new SetStateAction(stateJSON));
         }
-
+        this.baseStore.subscribe(result => {
+          sessionStorage.setItem('app', JSON.stringify(result));
+        });
+      }
+      else {
+        const state = localStorage.getItem('app');
+        if (state) {
+          const stateJSON = JSON.parse(state).app;
+          this.baseStore.dispatch(new SetStateAction(stateJSON));
+        }
         this.baseStore.subscribe(result => {
           localStorage.setItem('app', JSON.stringify(result));
         });
