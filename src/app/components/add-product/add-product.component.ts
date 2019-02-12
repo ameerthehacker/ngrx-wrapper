@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { Stateful } from 'src/state/state';
 import { Store } from '@ngrx/store';
@@ -8,7 +8,7 @@ import { Store } from '@ngrx/store';
   templateUrl: './add-product.component.html',
   styleUrls: ['./add-product.component.scss']
 })
-export class AddProductComponent implements OnInit {
+export class AddProductComponent implements OnInit, AfterViewInit {
 
   fb: FormBuilder;
   formGroup: FormGroup;
@@ -24,18 +24,22 @@ export class AddProductComponent implements OnInit {
       stock: []
     });
   }
+  public products: any[];
 
   onAddProductSubmit() {
-    this.state.get('PRODUCTS').then((products: any[] = []) => {
-      
-      const result = this.formGroup.value;
-      const id = products.length + 1;
-
-      this.state.set('PRODUCTS', [...products, { id, productCode: result.productCode, name: result.productName, stock: parseInt(result.stock) }]);
-    });
+    var result = this.formGroup.value;
+    var id = this.products.length + 1;
+    this.state.set('PRODUCTS', [...this.products, { id, productCode: result.productCode, name: result.productName, stock: parseInt(result.stock) }]);
   }
 
   ngOnInit() {
+  }
+
+  ngAfterViewInit(){
+    const d = this.state.listen('PRODUCTS').subscribe((p: any[] = []) => {
+      this.products = p;
+    });
+    
   }
 
 }
