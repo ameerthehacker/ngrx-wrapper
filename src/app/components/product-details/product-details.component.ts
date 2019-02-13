@@ -14,8 +14,8 @@ export class ProductDetailsComponent implements OnInit {
     //super(store);
   }
 
-  ngOnInit() {
-    this.state.listen('SELECTED_PRODUCT_ID').subscribe((id) => {
+  async ngOnInit() {
+    (await this.state.listen('SELECTED_PRODUCT_ID')).subscribe((id) => {
       if(id) {
         this.state.get('PRODUCTS').then((products: any) => {
           this.selectedProduct = products.find(product => product.id == id);

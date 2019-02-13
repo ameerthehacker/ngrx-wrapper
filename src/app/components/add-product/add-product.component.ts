@@ -24,7 +24,7 @@ export class AddProductComponent implements OnInit, AfterViewInit {
       stock: []
     });
   }
-  public products: any[];
+  public products: any[] = [];
 
   onAddProductSubmit() {
     var result = this.formGroup.value;
@@ -35,9 +35,9 @@ export class AddProductComponent implements OnInit, AfterViewInit {
   ngOnInit() {
   }
 
-  ngAfterViewInit(){
-    const d = this.state.listen('PRODUCTS').subscribe((p: any[] = []) => {
-      this.products = p;
+  async ngAfterViewInit(){
+    const d = (await this.state.listen('PRODUCTS')).subscribe((p: any[] = []) => {
+      this.products = p || this.products;
     });
     
   }

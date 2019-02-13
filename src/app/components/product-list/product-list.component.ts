@@ -11,17 +11,17 @@ export class ProductListComponent implements OnInit {
 
   products: any;
 
-  constructor(private store: Store<any>, private state: Stateful) { 
+  constructor(private store: Store<any>, private state: Stateful) {
     //super(store);
   }
 
-  ngOnInit() {
-    this.state.listen('PRODUCTS').subscribe((products) => {
+  async ngOnInit() {
+    (await this.state.listen('PRODUCTS')).subscribe((products) => {
       this.products = products;
     });
 
   }
-  
+
   onProductSelected(id) {
     this.state.set('SELECTED_PRODUCT_ID', id);
   }

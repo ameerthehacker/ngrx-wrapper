@@ -4,6 +4,7 @@ import { SetAction, SetStateAction } from './actions';
 import { OnDestroy } from '@angular/core';
 import { IStorageConfig } from './state.module';
 import { Storage_Enums } from './storage.enums';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class Stateful {
@@ -12,7 +13,7 @@ export class Stateful {
   constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
-    this.setDefaultState();
+    //this.setDefaultState();
   }
 
   setDefaultState(): void {
@@ -35,17 +36,6 @@ export class Stateful {
           this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
         }.bind(this)
       }.bind(this)
-
-      // var dbReq = window.indexedDB.open("db_state", 1);
-      // dbReq.onsuccess = function () {
-      //   let db = dbReq.result;
-      //   let transaction = db.transaction("state", "readwrite");
-      //   let objstore = transaction.objectStore("state");
-      //   let response = objstore.get("state");
-      //   response.onsuccess = function () {
-      //     this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
-      //   }.bind(this)
-      // }.bind(this)
       this.baseStore.subscribe(response => {
         var dbReq = window.indexedDB.open("db_state", 1);
         dbReq.onsuccess = function () {
@@ -57,22 +47,8 @@ export class Stateful {
       });
     }
     else if (this.storageConfig.db === Storage_Enums.SessionStorage) {
-      const data = Object.assign({}, sessionStorage);
-      if (data) {
-        for (const [key, val] of Object.entries(data)) {
-          data[key] = JSON.parse(val);
-        }
-        this.baseStore.dispatch(new SetStateAction(data));
-      }
     }
     else if (this.storageConfig.db === Storage_Enums.LocalStorage) {
-      const data = Object.assign({}, localStorage);
-      if (data) {
-        for (const [key, val] of Object.entries(data)) {
-          data[key] = JSON.parse(val);
-        }
-        this.baseStore.dispatch(new SetStateAction(data));
-      }
     }
 
   }
@@ -80,12 +56,22 @@ export class Stateful {
   public set(key: any, value: any) {
     const db = this.storageConfig.db;
     this.setAction.payload = { key, value, db };
-
     this.baseStore.dispatch(this.setAction);
   }
 
-  public listen(key: any) {
-    return this.baseStore.select('app', key);
+  public listen(key: any): Promise<Observable<any>> {
+    let $storeValue = this.baseStore.select('app', key);
+    return new Promise((resolve, reject) => {
+      $storeValue.subscribe(data => {
+        let storeValue = data;
+        if (!storeValue && this.storageConfig.db) {
+          const resposne = this.getValueFromStorage(key);
+          this.set(key, resposne);
+          $storeValue = this.baseStore.select('app', key);
+        }
+        resolve($storeValue);
+      });
+    })
   }
 
   public get(key: any) {
@@ -95,5 +81,23 @@ export class Stateful {
       });
     });
   }
+  getValueFromStorage(key: string): any {
+    if (this.storageConfig.db == Storage_Enums.LocalStorage) {
+      let itemValue = localStorage.getItem(key);
+      if (itemValue == "undefined") {
+        return undefined;
+      }
+      return JSON.parse(itemValue);
+    }
+    else if (this.storageConfig.db == Storage_Enums.SessionStorage) {
+      let itemValue = sessionStorage.getItem(key);
+      if (itemValue == "undefined") {
+        return undefined;
+      }
+      return JSON.parse(itemValue);
+    }
+    else if (this.storageConfig.db == Storage_Enums.IndexDb) {
 
+    }
+  }
 }

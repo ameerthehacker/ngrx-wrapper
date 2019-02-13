@@ -14,14 +14,17 @@ export class TotalStockComponent implements OnInit {
     //super(store);
   }
 
-  ngOnInit() {
-    this.state.listen('PRODUCTS').subscribe(products => {
+  async ngOnInit() {
+    (await this.state.listen('PRODUCTS')).subscribe(products => {
       this.totalStock = 0;
       
       if(products) {
         products.forEach(product => {
           this.totalStock += product.stock;
         });
+      }
+      else{
+        this.totalStock = 0;
       }
     });
   }
