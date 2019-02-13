@@ -1,28 +1,23 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, OnInit, DebugElement } from '@angular/core';
 import { Store } from '@ngrx/store'
 import { SetAction, SetStateAction } from './actions';
 import { OnDestroy } from '@angular/core';
-
-export interface IConfig {
-  saveState: boolean;
-  db: 'localstorage' | 'indexdb' | 'sessionstorage'
-}
+import { IStorageConfig } from './state.module';
+import { Storage_Enums } from './storage.enums';
 
 @Injectable()
 export class Stateful {
   private setAction: SetAction;
-  private config: IConfig;
 
-  constructor(private baseStore: Store<any>) {
+  constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
+    this.setDefaultState();
   }
 
-  int(config: IConfig) {
-    this.config = config;
-
-    if (config.saveState) {
-      if (config.db === "indexdb") {
+  setDefaultState(): void {
+    if (this.storageConfig.saveState) {
+      if (this.storageConfig.db === Storage_Enums.IndexDb) {
         var dbReq = window.indexedDB.open("db_state", 1);
         dbReq.onupgradeneeded = function () {
           var db = dbReq.result;
@@ -61,31 +56,30 @@ export class Stateful {
           }
         });
       }
-      else if(config.db === "sessionstorage"){
-        const state = sessionStorage.getItem('app');
-        if (state) {
-          const stateJSON = JSON.parse(state).app;
-          this.baseStore.dispatch(new SetStateAction(stateJSON));
+      else if (this.storageConfig.db === Storage_Enums.SessionStorage) {
+        const data = Object.assign({}, sessionStorage);
+        if (data) {
+          for (const [key, val] of Object.entries(data)) {
+            data[key] = JSON.parse(val);
+          }
+          this.baseStore.dispatch(new SetStateAction(data));
         }
-        this.baseStore.subscribe(result => {
-          sessionStorage.setItem('app', JSON.stringify(result));
-        });
       }
-      else {
-        const state = localStorage.getItem('app');
-        if (state) {
-          const stateJSON = JSON.parse(state).app;
-          this.baseStore.dispatch(new SetStateAction(stateJSON));
+      else if (this.storageConfig.db === Storage_Enums.IndexDb){
+        const data = Object.assign({}, localStorage);
+        if (data) {
+          for (const [key, val] of Object.entries(data)) {
+            data[key] = JSON.parse(val);
+          }
+          this.baseStore.dispatch(new SetStateAction(data));
         }
-        this.baseStore.subscribe(result => {
-          localStorage.setItem('app', JSON.stringify(result));
-        });
       }
     }
   }
 
   public set(key: any, value: any) {
-    this.setAction.payload = { key, value };
+    const db =  this.storageConfig.db;
+    this.setAction.payload = { key, value, db};
 
     this.baseStore.dispatch(this.setAction);
   }

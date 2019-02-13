@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Stateful } from 'src/state/state';
+import { Stateful } from '../state/state';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -9,12 +9,7 @@ import { Stateful } from 'src/state/state';
 export class AppComponent implements OnDestroy {
   title = 'ngx-wrapper';
 
-  constructor(private statefulService: Stateful) {
-    this.statefulService.int({
-      db: 'localstorage',
-      saveState: true
-    })
-  }
+  constructor() {}
 
   ngOnDestroy() {
     console.log('destroy');
