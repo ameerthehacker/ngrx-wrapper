@@ -4,8 +4,7 @@ import { rootReducer } from './reducers';
 import { Stateful } from './state';
 
 export interface IStorageConfig{
-  saveState: boolean;
-  db: 'localstorage' | 'indexdb' | 'sessionstorage'
+  db: 'localstorage' | 'indexdb' | 'sessionstorage' | '';
 }
 
 @NgModule({

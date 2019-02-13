@@ -16,70 +16,70 @@ export class Stateful {
   }
 
   setDefaultState(): void {
-    if (this.storageConfig.saveState) {
-      if (this.storageConfig.db === Storage_Enums.IndexDb) {
+    debugger
+    if (this.storageConfig.db === Storage_Enums.IndexDb) {
+      var dbReq = window.indexedDB.open("db_state", 1);
+      dbReq.onupgradeneeded = function () {
+        var db = dbReq.result;
+        db.createObjectStore("state");
+      };
+      dbReq.onerror = function () {
+        console.log("failed opening DB:")
+      };
+      dbReq.onsuccess = function () {
+        let db = dbReq.result;
+        let transaction = db.transaction("state", "readwrite");
+        let objstore = transaction.objectStore("state");
+        let response = objstore.get("state");
+        response.onsuccess = function () {
+          this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
+        }.bind(this)
+      }.bind(this)
+
+      // var dbReq = window.indexedDB.open("db_state", 1);
+      // dbReq.onsuccess = function () {
+      //   let db = dbReq.result;
+      //   let transaction = db.transaction("state", "readwrite");
+      //   let objstore = transaction.objectStore("state");
+      //   let response = objstore.get("state");
+      //   response.onsuccess = function () {
+      //     this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
+      //   }.bind(this)
+      // }.bind(this)
+      this.baseStore.subscribe(response => {
         var dbReq = window.indexedDB.open("db_state", 1);
-        dbReq.onupgradeneeded = function () {
-          var db = dbReq.result;
-          db.createObjectStore("state");
-        };
-        dbReq.onerror = function () {
-          console.log("failed opening DB:")
-        };
         dbReq.onsuccess = function () {
           let db = dbReq.result;
           let transaction = db.transaction("state", "readwrite");
           let objstore = transaction.objectStore("state");
-          let response = objstore.get("state");
-          response.onsuccess = function () {
-            this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
-          }.bind(this)
-        }.bind(this)
-
-        // var dbReq = window.indexedDB.open("db_state", 1);
-        // dbReq.onsuccess = function () {
-        //   let db = dbReq.result;
-        //   let transaction = db.transaction("state", "readwrite");
-        //   let objstore = transaction.objectStore("state");
-        //   let response = objstore.get("state");
-        //   response.onsuccess = function () {
-        //     this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
-        //   }.bind(this)
-        // }.bind(this)
-        this.baseStore.subscribe(response => {
-          var dbReq = window.indexedDB.open("db_state", 1);
-          dbReq.onsuccess = function () {
-            let db = dbReq.result;
-            let transaction = db.transaction("state", "readwrite");
-            let objstore = transaction.objectStore("state");
-            objstore.put(JSON.stringify(response), "state");
-          }
-        });
-      }
-      else if (this.storageConfig.db === Storage_Enums.SessionStorage) {
-        const data = Object.assign({}, sessionStorage);
-        if (data) {
-          for (const [key, val] of Object.entries(data)) {
-            data[key] = JSON.parse(val);
-          }
-          this.baseStore.dispatch(new SetStateAction(data));
+          objstore.put(JSON.stringify(response), "state");
         }
-      }
-      else if (this.storageConfig.db === Storage_Enums.IndexDb){
-        const data = Object.assign({}, localStorage);
-        if (data) {
-          for (const [key, val] of Object.entries(data)) {
-            data[key] = JSON.parse(val);
-          }
-          this.baseStore.dispatch(new SetStateAction(data));
+      });
+    }
+    else if (this.storageConfig.db === Storage_Enums.SessionStorage) {
+      const data = Object.assign({}, sessionStorage);
+      if (data) {
+        for (const [key, val] of Object.entries(data)) {
+          data[key] = JSON.parse(val);
         }
+        this.baseStore.dispatch(new SetStateAction(data));
       }
     }
+    else if (this.storageConfig.db === Storage_Enums.LocalStorage) {
+      const data = Object.assign({}, localStorage);
+      if (data) {
+        for (const [key, val] of Object.entries(data)) {
+          data[key] = JSON.parse(val);
+        }
+        this.baseStore.dispatch(new SetStateAction(data));
+      }
+    }
+
   }
 
   public set(key: any, value: any) {
-    const db =  this.storageConfig.db;
-    this.setAction.payload = { key, value, db};
+    const db = this.storageConfig.db;
+    this.setAction.payload = { key, value, db };
 
     this.baseStore.dispatch(this.setAction);
   }

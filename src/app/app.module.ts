@@ -22,8 +22,7 @@ import { TotalStockComponent } from './components/total-stock/total-stock.compon
     BrowserModule,
     AppRoutingModule,
     StateModule.forRoot({
-      db : "sessionstorage",
-      saveState: true
+      db : ''
     }),
     FormsModule,
     ReactiveFormsModule
