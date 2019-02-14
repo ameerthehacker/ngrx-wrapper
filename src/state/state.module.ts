@@ -3,6 +3,7 @@ import { StoreModule } from '@ngrx/store';
 import { rootReducer } from './reducers';
 import { Stateful } from './state';
 import { DexieService } from './dexie.service';
+import { ObservableManagerService } from './observable-manager.service';
 
 export interface IStorageConfig{
   db: 'localstorage' | 'indexdb' | 'sessionstorage' | '';
@@ -12,8 +13,9 @@ export interface IStorageConfig{
   imports: [StoreModule.forRoot({ 
     app: rootReducer
    })],
-   providers:[Stateful, DexieService]
+   providers:[Stateful, ObservableManagerService, DexieService]
 })
+
 export class StateModule {
   static forRoot(storageConfig: IStorageConfig): ModuleWithProviders{
     return {
