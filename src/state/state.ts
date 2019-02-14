@@ -5,12 +5,13 @@ import { OnDestroy } from '@angular/core';
 import { IStorageConfig } from './state.module';
 import { Storage_Enums } from './storage.enums';
 import { Observable } from 'rxjs';
+import { ObservableManagerService } from './observable-manager.service';
 
 @Injectable()
 export class Stateful {
   private setAction: SetAction;
 
-  constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig) {
+  constructor(private baseStore: Store<any>, private observableManagerService: ObservableManagerService, @Inject('storageConfig') private storageConfig: IStorageConfig) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
     //this.setDefaultState();
@@ -59,25 +60,26 @@ export class Stateful {
     this.baseStore.dispatch(this.setAction);
   }
 
-  public listen(key: any): Promise<Observable<any>> {
+  public listen(key: any, callback) {
     let $storeValue = this.baseStore.select('app', key);
-    return new Promise((resolve, reject) => {
-      $storeValue.subscribe(data => {
-        let storeValue = data;
-        if (!storeValue && this.storageConfig.db) {
-          const resposne = this.getValueFromStorage(key);
-          this.set(key, resposne);
-          $storeValue = this.baseStore.select('app', key);
-        }
-        resolve($storeValue);
-      });
-    })
+    
+    const observable = $storeValue.subscribe(data => {
+      let storeValue = data;
+      if (!storeValue && this.storageConfig.db) {
+        const response = this.getValueFromStorage(key);
+        this.set(key, response);
+      }
+      
+      callback(data);
+    });
+
+    return observable;
   }
 
   public get(key: any) {
     return new Promise((resolve, reject) => {
-      this.baseStore.select('app', key).subscribe((result: any) => {
-        resolve(result);
+      const observable = this.baseStore.select('app', key).subscribe((result: any) => {
+        resolve({ result, observable });
       });
     });
   }

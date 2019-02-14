@@ -1,28 +1,28 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Injector } from '@angular/core';
 import { Stateful } from 'src/state/state';
 import { Store } from '@ngrx/store';
+import { ObservableManager } from 'src/state/observable-manager';
 
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss']
 })
-export class ProductListComponent implements OnInit {
+export class ProductListComponent extends ObservableManager implements OnInit {
 
   products: any;
 
-  constructor(private store: Store<any>, private state: Stateful) {
-    //super(store);
+  constructor(injector: Injector) {
+    super(injector);
   }
 
-  async ngOnInit() {
-    (await this.state.listen('PRODUCTS')).subscribe((products) => {
+  ngOnInit() {
+    this.listen('PRODUCTS', (products) => {
       this.products = products;
     });
-
   }
 
   onProductSelected(id) {
-    this.state.set('SELECTED_PRODUCT_ID', id);
+    this.set('SELECTED_PRODUCT_ID', id);
   }
 }

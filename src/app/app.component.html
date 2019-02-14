@@ -1,9 +1,9 @@
-<app-total-stock></app-total-stock>
+<app-total-stock *ngIf="productsVisisble"></app-total-stock>
 <div class="container">
     <div class="products">
-        <app-product-list></app-product-list>
+        <app-product-list ></app-product-list>
         <app-add-product></app-add-product>
+        <button (click)="onHideBtnClick()">Toggle</button>
       </div>
   <app-product-details></app-product-details>
-
 </div>
