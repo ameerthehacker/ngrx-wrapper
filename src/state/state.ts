@@ -5,58 +5,31 @@ import { OnDestroy } from '@angular/core';
 import { IStorageConfig } from './state.module';
 import { Storage_Enums } from './storage.enums';
 import { Observable } from 'rxjs';
+import { DexieService } from './dexie.service';
 
 @Injectable()
 export class Stateful {
   private setAction: SetAction;
+  //private table: Dexie.Table<any, string>;
 
-  constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig) {
+  constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig, private indexDb: DexieService) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
-    //this.setDefaultState();
-  }
-
-  setDefaultState(): void {
-    debugger
-    if (this.storageConfig.db === Storage_Enums.IndexDb) {
-      var dbReq = window.indexedDB.open("db_state", 1);
-      dbReq.onupgradeneeded = function () {
-        var db = dbReq.result;
-        db.createObjectStore("state");
-      };
-      dbReq.onerror = function () {
-        console.log("failed opening DB:")
-      };
-      dbReq.onsuccess = function () {
-        let db = dbReq.result;
-        let transaction = db.transaction("state", "readwrite");
-        let objstore = transaction.objectStore("state");
-        let response = objstore.get("state");
-        response.onsuccess = function () {
-          this.baseStore.dispatch(new SetStateAction(JSON.parse(response.result).app));
-        }.bind(this)
-      }.bind(this)
-      this.baseStore.subscribe(response => {
-        var dbReq = window.indexedDB.open("db_state", 1);
-        dbReq.onsuccess = function () {
-          let db = dbReq.result;
-          let transaction = db.transaction("state", "readwrite");
-          let objstore = transaction.objectStore("state");
-          objstore.put(JSON.stringify(response), "state");
-        }
-      });
-    }
-    else if (this.storageConfig.db === Storage_Enums.SessionStorage) {
-    }
-    else if (this.storageConfig.db === Storage_Enums.LocalStorage) {
-    }
-
   }
 
   public set(key: any, value: any) {
     const db = this.storageConfig.db;
-    this.setAction.payload = { key, value, db };
+    this.setAction.payload = { key, value };
     this.baseStore.dispatch(this.setAction);
+    if (db === Storage_Enums.LocalStorage) {
+      this.saveStateInLocalStorage(key, value);
+    }
+    else if (db === Storage_Enums.SessionStorage) {
+      this.saveStateInSessionStorage(key, value)
+    }
+    else if (db === Storage_Enums.IndexDb) {
+      this.saveStateInIndexDb(key, value)
+    }
   }
 
   public listen(key: any): Promise<Observable<any>> {
@@ -97,7 +70,26 @@ export class Stateful {
       return JSON.parse(itemValue);
     }
     else if (this.storageConfig.db == Storage_Enums.IndexDb) {
-
+      let itemValue: any;
+      this.indexDb.get(key).then((response: any) => {
+        itemValue = response;
+        if (itemValue == "undefined" || itemValue == undefined) {
+          return undefined;
+        }
+        return JSON.parse(itemValue);
+      });
     }
   }
+
+  saveStateInLocalStorage(key: string, value: any) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+  saveStateInSessionStorage(key: string, value: any) {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  }
+  saveStateInIndexDb(key: string, value: any) {
+    this.indexDb.set(key, JSON.stringify(value));
+  }
 }
+
+

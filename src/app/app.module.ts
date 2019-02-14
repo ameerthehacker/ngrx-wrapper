@@ -22,7 +22,7 @@ import { TotalStockComponent } from './components/total-stock/total-stock.compon
     BrowserModule,
     AppRoutingModule,
     StateModule.forRoot({
-      db : 'localstorage'
+      db : 'indexdb'
     }),
     FormsModule,
     ReactiveFormsModule
