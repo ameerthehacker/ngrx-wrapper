@@ -26,7 +26,6 @@ export abstract class ObservableManager implements OnDestroy {
     return new Promise((resolve ,reject) => {
       this.statefulService.get(key).then((response: any) => {
         resolve(response.result);
-        console.log(response);
         //response.observable.unsubsribe();
       })
     });

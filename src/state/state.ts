@@ -56,6 +56,7 @@ export class Stateful {
       });
     });
   }
+  
   getValueFromStorage(key: string): any {
     if (this.storageConfig.db == Storage_Enums.LocalStorage) {
       let itemValue = localStorage.getItem(key);
