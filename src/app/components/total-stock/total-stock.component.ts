@@ -1,6 +1,4 @@
 import { Component, OnInit, Injector } from '@angular/core';
-import { StatefulService } from 'src/state/state.service';
-import { Store } from '@ngrx/store';
 import { Stateful } from 'src/state/stateful';
 
 @Component({
