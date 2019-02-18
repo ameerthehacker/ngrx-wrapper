@@ -1,17 +1,13 @@
 import { Injectable, Inject, OnInit, DebugElement } from '@angular/core';
 import { Store } from '@ngrx/store'
 import { SetAction, SetStateAction } from './actions';
-import { OnDestroy } from '@angular/core';
 import { IStorageConfig } from './state.module';
 import { Storage_Enums } from './storage.enums';
-import { Observable } from 'rxjs';
 import { DexieService } from './dexie.service';
-import { ObservableManagerService } from './observable-manager.service';
 
 @Injectable()
-export class Stateful {
+export class StatefulService {
   private setAction: SetAction;
-  //private table: Dexie.Table<any, string>;
 
   constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig, private indexDb: DexieService) {
     this.baseStore = baseStore;
@@ -39,8 +35,9 @@ export class Stateful {
     const observable = $storeValue.subscribe(data => {
       let storeValue = data;
       if (!storeValue && this.storageConfig.db) {
-        const response = this.getValueFromStorage(key);
-        this.set(key, response);
+        this.getValueFromStorage(key).then(response => {
+          this.set(key, response);
+        });
       }
       
       callback(data);
@@ -57,30 +54,33 @@ export class Stateful {
     });
   }
   
-  getValueFromStorage(key: string): any {
+  getValueFromStorage(key: string): Promise<any> {
     if (this.storageConfig.db == Storage_Enums.LocalStorage) {
       let itemValue = localStorage.getItem(key);
       if (itemValue == "undefined") {
-        return undefined;
+        return Promise.resolve(undefined);
       }
-      return JSON.parse(itemValue);
+      return Promise.resolve(JSON.parse(itemValue));
     }
     else if (this.storageConfig.db == Storage_Enums.SessionStorage) {
       let itemValue = sessionStorage.getItem(key);
       if (itemValue == "undefined") {
-        return undefined;
+        return Promise.resolve(undefined);
       }
-      return JSON.parse(itemValue);
+      return Promise.resolve(JSON.parse(itemValue));
     }
     else if (this.storageConfig.db == Storage_Enums.IndexDb) {
       let itemValue: any;
-      this.indexDb.get(key).then((response: any) => {
-        itemValue = response;
-        if (itemValue == "undefined" || itemValue == undefined) {
-          return undefined;
-        }
-        return JSON.parse(itemValue);
-      });
+      
+      return new Promise((resolve, reject) => {
+        this.indexDb.get(key).then((response: any) => {
+          itemValue = response;
+          if (itemValue == "undefined" || itemValue == undefined) {
+            resolve(undefined);
+          }
+          resolve(JSON.parse(itemValue));
+        });
+      })
     }
   }
 

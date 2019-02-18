@@ -1,15 +1,15 @@
 import { OnDestroy, Injector } from '@angular/core';
 import { UUID } from 'angular2-uuid';
-import { Stateful } from './state';
+import { StatefulService } from './state.service';
 import { ObservableManagerService } from './observable-manager.service';
 
-export abstract class ObservableManager implements OnDestroy {
+export abstract class Stateful implements OnDestroy {
   protected readonly uid = UUID.UUID();
-  private statefulService: Stateful;
+  private statefulService: StatefulService;
   private observableManagerService: ObservableManagerService;
 
   constructor(private injector: Injector) {
-    this.statefulService = injector.get(Stateful);
+    this.statefulService = injector.get(StatefulService);
     this.observableManagerService = injector.get(ObservableManagerService);
   }
 

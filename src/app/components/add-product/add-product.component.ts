@@ -1,14 +1,13 @@
 import { Component, OnInit, AfterViewInit, Injector } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { Store } from '@ngrx/store';
-import { ObservableManager } from 'src/state/observable-manager';
+import { Stateful } from 'src/state/stateful';
 
 @Component({
   selector: 'app-add-product',
   templateUrl: './add-product.component.html',
   styleUrls: ['./add-product.component.scss']
 })
-export class AddProductComponent extends ObservableManager implements OnInit, AfterViewInit {
+export class AddProductComponent extends Stateful implements OnInit, AfterViewInit {
 
   fb: FormBuilder;
   formGroup: FormGroup;

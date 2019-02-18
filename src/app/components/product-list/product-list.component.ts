@@ -1,14 +1,14 @@
 import { Component, OnInit, Injector } from '@angular/core';
-import { Stateful } from 'src/state/state';
+import { StatefulService } from 'src/state/state.service';
 import { Store } from '@ngrx/store';
-import { ObservableManager } from 'src/state/observable-manager';
+import { Stateful } from 'src/state/stateful';
 
 @Component({
   selector: 'app-product-list',
   templateUrl: './product-list.component.html',
   styleUrls: ['./product-list.component.scss']
 })
-export class ProductListComponent extends ObservableManager implements OnInit {
+export class ProductListComponent extends Stateful implements OnInit {
 
   products: any;
 

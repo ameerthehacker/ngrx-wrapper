@@ -1,14 +1,14 @@
 import { Component, OnInit, Injector } from '@angular/core';
-import { Stateful } from 'src/state/state';
+import { StatefulService } from 'src/state/state.service';
 import { Store } from '@ngrx/store';
-import { ObservableManager } from 'src/state/observable-manager';
+import { Stateful } from 'src/state/stateful';
 
 @Component({
   selector: 'app-total-stock',
   templateUrl: './total-stock.component.html',
   styleUrls: ['./total-stock.component.scss']
 })
-export class TotalStockComponent extends ObservableManager implements OnInit {
+export class TotalStockComponent extends Stateful implements OnInit {
   totalStock: 0;
 
   constructor(injector: Injector) { 

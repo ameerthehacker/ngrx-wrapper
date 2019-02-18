@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Stateful } from '../state/state';
+import { StatefulService } from '../state/state.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
