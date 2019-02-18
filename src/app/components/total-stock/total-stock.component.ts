@@ -1,21 +1,33 @@
-import { Component, OnInit } from '@angular/core';
-import { Stateful } from 'src/state/state';
-import { Store } from '@ngrx/store';
+import { Component, OnInit, Injector } from '@angular/core';
+import { Stateful } from 'src/state/stateful';
 
 @Component({
   selector: 'app-total-stock',
   templateUrl: './total-stock.component.html',
   styleUrls: ['./total-stock.component.scss']
 })
-export class TotalStockComponent implements OnInit {
+export class TotalStockComponent extends Stateful implements OnInit {
   totalStock: 0;
 
-  constructor(private store: Store<any>, private state: Stateful) { 
-    //super(store);
+  constructor(injector: Injector) { 
+    super(injector);
   }
 
-  async ngOnInit() {
-    (await this.state.listen('PRODUCTS')).subscribe(products => {
+  ngOnInit() {
+    this.listen('PRODUCTS', products => {
+      this.totalStock = 0;
+      
+      if(products) {
+        products.forEach(product => {
+          this.totalStock += product.stock;
+        });
+      }
+      else{
+        this.totalStock = 0;
+      }
+    });
+
+    this.listen('PRODUCTS', products => {
       this.totalStock = 0;
       
       if(products) {

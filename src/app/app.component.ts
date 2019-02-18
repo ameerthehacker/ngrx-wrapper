@@ -1,17 +1,18 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Store } from '@ngrx/store';
-import { Stateful } from '../state/state';
+import { StatefulService } from '../state/state.service';
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent implements OnDestroy {
-  title = 'ngx-wrapper';
+export class AppComponent {
+  title = 'ngrx-wrapper';
+  productsVisisble: boolean = true;
 
   constructor() {}
 
-  ngOnDestroy() {
-    console.log('destroy');
+  onHideBtnClick() {
+    this.productsVisisble = !this.productsVisisble;
   }
 }

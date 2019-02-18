@@ -1,8 +1,9 @@
 import { NgModule, ModuleWithProviders, InjectionToken } from "@angular/core";
 import { StoreModule } from '@ngrx/store';
 import { rootReducer } from './reducers';
-import { Stateful } from './state';
+import { StatefulService } from './state.service';
 import { DexieService } from './dexie.service';
+import { ObservableManagerService } from './observable-manager.service';
 
 export interface IStorageConfig{
   db: 'localstorage' | 'indexdb' | 'sessionstorage' | '';
@@ -12,8 +13,9 @@ export interface IStorageConfig{
   imports: [StoreModule.forRoot({ 
     app: rootReducer
    })],
-   providers:[Stateful, DexieService]
+   providers:[StatefulService, ObservableManagerService, DexieService]
 })
+
 export class StateModule {
   static forRoot(storageConfig: IStorageConfig): ModuleWithProviders{
     return {

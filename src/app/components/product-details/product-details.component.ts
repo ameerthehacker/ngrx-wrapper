@@ -1,23 +1,22 @@
-import { Component, OnInit } from '@angular/core';
-import { Stateful } from 'src/state/state';
-import { Store } from '@ngrx/store';
+import { Component, OnInit, Injector } from '@angular/core';
+import { Stateful } from 'src/state/stateful';
 
 @Component({
   selector: 'app-product-details',
   templateUrl: './product-details.component.html',
   styleUrls: ['./product-details.component.scss']
 })
-export class ProductDetailsComponent implements OnInit {
+export class ProductDetailsComponent extends Stateful implements OnInit {
   selectedProduct: any;
 
-  constructor(private store: Store<any>, private state: Stateful) {
-    //super(store);
+  constructor(injector: Injector) {
+    super(injector);
   }
 
   async ngOnInit() {
-    (await this.state.listen('SELECTED_PRODUCT_ID')).subscribe((id) => {
+    this.listen('SELECTED_PRODUCT_ID', (id) => {
       if(id) {
-        this.state.get('PRODUCTS').then((products: any) => {
+        this.get('PRODUCTS').then((products: any) => {
           this.selectedProduct = products.find(product => product.id == id);
         });
       }
