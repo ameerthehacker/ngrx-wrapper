@@ -4,17 +4,25 @@ import { SetAction, SetStateAction } from './actions';
 import { IStorageConfig } from './state.module';
 import { Storage_Enums } from './storage.enums';
 import { DexieService } from './dexie.service';
+import { Subscription } from 'rxjs';
+import { first } from 'rxjs/operators';
 
 @Injectable()
 export class StatefulService {
   private setAction: SetAction;
+  private prefix: string;
 
   constructor(private baseStore: Store<any>, @Inject('storageConfig') private storageConfig: IStorageConfig, private indexDb: DexieService) {
     this.baseStore = baseStore;
     this.setAction = new SetAction();
+    this.prefix = storageConfig.prefix || 'ssm';
   }
 
   public set(key: any, value: any) {
+    if(!key.startsWith(this.prefix)) {
+      key = `${this.prefix}-${key}`;
+    }
+
     const db = this.storageConfig.db;
     this.setAction.payload = { key, value };
     this.baseStore.dispatch(this.setAction);
@@ -29,10 +37,14 @@ export class StatefulService {
     }
   }
 
-  public listen(key: any, callback) {
+  public listen(key: any, callback): Subscription {
+    if(!key.startsWith(this.prefix)) {
+      key = `${this.prefix}-${key}`;
+    }
+
     let $storeValue = this.baseStore.select('app', key);
     
-    const observable = $storeValue.subscribe(data => {
+    const observable: Subscription = $storeValue.subscribe(data => {
       let storeValue = data;
       if (!storeValue && this.storageConfig.db) {
         this.getValueFromStorage(key).then(response => {
@@ -46,12 +58,25 @@ export class StatefulService {
     return observable;
   }
 
-  public get(key: any) {
-    return new Promise((resolve, reject) => {
-      const observable = this.baseStore.select('app', key).subscribe((result: any) => {
-        resolve({ result, observable });
-      });
+  public get(key: any, callback) {
+    if(!key.startsWith(this.prefix)) {
+      key = `${this.prefix}-${key}`;
+    }
+
+    let $storeValue = this.baseStore.select('app', key);
+    
+    const observable: Subscription = $storeValue.pipe(first()).subscribe(data => {
+      let storeValue = data;
+      if (!storeValue && this.storageConfig.db) {
+        this.getValueFromStorage(key).then(response => {
+          this.set(key, response);
+        });
+      }
+      
+      callback(data);
     });
+
+    return observable;
   }
   
   getValueFromStorage(key: string): Promise<any> {
@@ -75,10 +100,12 @@ export class StatefulService {
       return new Promise((resolve, reject) => {
         this.indexDb.get(key).then((response: any) => {
           itemValue = response;
-          if (itemValue == "undefined" || itemValue == undefined) {
+          if (itemValue == undefined) {
             resolve(undefined);
           }
-          resolve(JSON.parse(itemValue));
+          else {
+            resolve(JSON.parse(itemValue));
+          }
         });
       })
     }

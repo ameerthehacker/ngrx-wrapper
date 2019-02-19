@@ -7,6 +7,7 @@ import { ObservableManagerService } from './observable-manager.service';
 
 export interface IStorageConfig{
   db: 'localstorage' | 'indexdb' | 'sessionstorage' | '';
+  prefix?: undefined | string;
 }
 
 @NgModule({

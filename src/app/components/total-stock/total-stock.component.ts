@@ -26,19 +26,6 @@ export class TotalStockComponent extends Stateful implements OnInit {
         this.totalStock = 0;
       }
     });
-
-    this.listen('PRODUCTS', products => {
-      this.totalStock = 0;
-      
-      if(products) {
-        products.forEach(product => {
-          this.totalStock += product.stock;
-        });
-      }
-      else{
-        this.totalStock = 0;
-      }
-    });
   }
 
 }

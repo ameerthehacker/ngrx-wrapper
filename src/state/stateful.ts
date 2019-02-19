@@ -24,10 +24,11 @@ export abstract class Stateful implements OnDestroy {
 
   public get(key: string) {
     return new Promise((resolve ,reject) => {
-      this.statefulService.get(key).then((response: any) => {
-        resolve(response.result);
-        //response.observable.unsubsribe();
-      })
+      const observable = this.statefulService.get(key, (response: any) => {
+        resolve(response);
+      });
+
+      this.observableManagerService.add(this.uid, observable);
     });
   }
 
